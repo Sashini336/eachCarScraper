@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import json
+import os
 
 def extract_more_information(soup):
     more_information = []
@@ -29,6 +30,14 @@ def extract_info(soup):
     # Extract the title
     title_element = soup.find('h1', class_='post-title')
     title = title_element.text.strip() if title_element else None
+    
+    image_element = soup.find(
+     'div', class_='result-item-image').find('a', class_='media-box').find('img', src=True)
+    image = image_element['src'] if image_element and 'src' in image_element.attrs else None
+    
+    price_element = soup.find(
+     'div', class_='result-item-pricing').find('div', class_='price')
+    price = price_element.text.strip() if price_element else None
 
     # Extract the more information
     more_information = extract_more_information(soup)
@@ -84,6 +93,7 @@ def extract_info(soup):
     return {
         'id': None,  # Placeholder for the 'id' field
         'title': title,
+        'price': price,
         'year': year,
         'millage': millage,
         'fuel_type': fuel_type,
@@ -92,6 +102,7 @@ def extract_info(soup):
         'engine_liters': engine_liters,
         'doors': doors,
         'color': color,
+        'image': image,
         'moreInformation': more_information
     }
 
@@ -126,6 +137,12 @@ def scrape_and_save_to_json(input_filename, output_filename):
         if info:
             scraped_data.append(info)
 
+    # Custom output directory and file name
+    output_directory = "output_data"
+    output_filename = os.path.join(output_directory, output_filename)
+
+    os.makedirs(output_directory, exist_ok=True)
+
     with open(output_filename, 'w', encoding='utf-8') as file:
         json.dump(scraped_data, file, ensure_ascii=False, indent=4)
 
@@ -134,4 +151,7 @@ def scrape_and_save_to_json(input_filename, output_filename):
 if __name__ == "__main__":
     input_filename = "data.json"
     output_filename = "scraped_data.json"
-    scrape_and_save_to_json(input_filename, output_filename)
+
+    custom_output_directory = "/Users/a.petkov/Desktop/reworkedv2/json"
+    custom_output_filename = "data.json"
+    scrape_and_save_to_json(input_filename, os.path.join(custom_output_directory, custom_output_filename))
