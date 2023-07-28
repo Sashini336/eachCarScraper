@@ -2,7 +2,21 @@ import requests
 from bs4 import BeautifulSoup
 import json
 
+def extract_more_information(soup):
+    more_information = []
+
+    title_info_div = soup.find_all('div', class_='col-md-12')[3]
+    br_elements = title_info_div.find_all('br')
+    for br in br_elements:
+        info = br.next_sibling.strip()
+        more_information.append(info)
+
+    return more_information
+
+
+
 def extract_info(soup):
+    title = None
     year = None
     millage = None
     fuel_type = None
@@ -11,6 +25,13 @@ def extract_info(soup):
     engine_liters = None
     doors = None
     color = None
+
+    # Extract the title
+    title_element = soup.find('h1', class_='post-title')
+    title = title_element.text.strip() if title_element else None
+
+    # Extract the more information
+    more_information = extract_more_information(soup)
 
     ul_element = soup.find('div', class_='options-left').find('ul')
     if ul_element:
@@ -61,6 +82,8 @@ def extract_info(soup):
             pass
 
     return {
+        'id': None,  # Placeholder for the 'id' field
+        'title': title,
         'year': year,
         'millage': millage,
         'fuel_type': fuel_type,
@@ -68,10 +91,11 @@ def extract_info(soup):
         'horsepower': horsepower,
         'engine_liters': engine_liters,
         'doors': doors,
-        'color': color
+        'color': color,
+        'moreInformation': more_information
     }
 
-def scrape_single_ad(link):
+def scrape_single_ad(link, ad_id):
     try:
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -84,6 +108,7 @@ def scrape_single_ad(link):
 
         soup = BeautifulSoup(response.content, 'html.parser')
         info = extract_info(soup)
+        info['id'] = ad_id
         return info
 
     except requests.exceptions.RequestException as e:
@@ -95,9 +120,9 @@ def scrape_and_save_to_json(input_filename, output_filename):
         data = json.load(file)
 
     scraped_data = []
-    for item in data:
+    for ad_id, item in enumerate(data, start=1):
         link = item['path']
-        info = scrape_single_ad(link)
+        info = scrape_single_ad(link, ad_id)
         if info:
             scraped_data.append(info)
 
