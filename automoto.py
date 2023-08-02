@@ -14,8 +14,6 @@ def extract_more_information(soup):
 
     return more_information
 
-
-
 def extract_info(soup):
     title = None
     year = None
@@ -30,14 +28,19 @@ def extract_info(soup):
     # Extract the title
     title_element = soup.find('h1', class_='post-title')
     title = title_element.text.strip() if title_element else None
-    
-    image_element = soup.find(
-     'div', class_='result-item-image').find('a', class_='media-box').find('img', src=True)
-    image = image_element['src'] if image_element and 'src' in image_element.attrs else None
-    
-    price_element = soup.find(
-     'div', class_='result-item-pricing').find('div', class_='price')
-    price = price_element.text.strip() if price_element else None
+
+    article_element = soup.find('article', class_='single-vehicle-details')
+    row_element = article_element.find('div', class_='row')
+    col_md_6_element = row_element.find_all('div', class_='col-md-6')[5]
+    row_2_element = col_md_6_element.find_all('div', class_='column')
+
+    image_urls = []
+
+    for div in row_2_element:
+        img_tag = div.find('img')
+        if img_tag and 'src' in img_tag.attrs:
+            image_url = img_tag['src']
+            image_urls.append(image_url)
 
     # Extract the more information
     more_information = extract_more_information(soup)
@@ -93,7 +96,7 @@ def extract_info(soup):
     return {
         'id': None,  # Placeholder for the 'id' field
         'title': title,
-        'price': price,
+        #'price': price,
         'year': year,
         'millage': millage,
         'fuel_type': fuel_type,
@@ -102,7 +105,7 @@ def extract_info(soup):
         'engine_liters': engine_liters,
         'doors': doors,
         'color': color,
-        'image': image,
+        'image_urls': image_urls,  # Add the 'image_urls' field to the dictionary
         'moreInformation': more_information
     }
 
