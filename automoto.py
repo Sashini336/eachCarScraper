@@ -25,7 +25,7 @@ def extract_info(soup):
     doors = None
     color = None
 
-    # Extract the title
+    
     title_element = soup.find('h1', class_='post-title')
     title = title_element.text.strip() if title_element else None
 
@@ -33,7 +33,17 @@ def extract_info(soup):
     row_element = article_element.find('div', class_='row')
     col_md_6_element = row_element.find_all('div', class_='col-md-6')[5]
     row_2_element = col_md_6_element.find_all('div', class_='column')
+    
+    
+    image_elements = col_md_6_element.find_all('div', class_='column')
 
+    for image_element in image_elements:
+        image = image_element.find('img', src=True)
+        if image:
+            first_image = image['src']
+            break
+
+        
     image_urls = []
 
     for div in row_2_element:
@@ -41,7 +51,14 @@ def extract_info(soup):
         if img_tag and 'src' in img_tag.attrs:
             image_url = img_tag['src']
             image_urls.append(image_url)
-
+            
+            
+    price_element_find = row_element.find_all('div', class_='col-md-6')[2]
+    
+    
+    price_element = price_element_find.find('p', class_='detail-price')
+    
+    price = price_element.text.strip()
     # Extract the more information
     more_information = extract_more_information(soup)
 
@@ -96,7 +113,7 @@ def extract_info(soup):
     return {
         'id': None,  # Placeholder for the 'id' field
         'title': title,
-        #'price': price,
+        'price': price,
         'year': year,
         'millage': millage,
         'fuel_type': fuel_type,
@@ -105,6 +122,7 @@ def extract_info(soup):
         'engine_liters': engine_liters,
         'doors': doors,
         'color': color,
+        'image': first_image,
         'image_urls': image_urls,  # Add the 'image_urls' field to the dictionary
         'moreInformation': more_information
     }
@@ -155,6 +173,6 @@ if __name__ == "__main__":
     input_filename = "data.json"
     output_filename = "scraped_data.json"
 
-    custom_output_directory = "/Users/a.petkov/Desktop/reworkedv2/json"
+    custom_output_directory = "/Users/a.petkov/Desktop"
     custom_output_filename = "data.json"
     scrape_and_save_to_json(input_filename, os.path.join(custom_output_directory, custom_output_filename))
