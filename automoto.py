@@ -109,9 +109,9 @@ def extract_info(soup):
             color = li_items_right[3].text.strip()
         except IndexError:
             pass
+        
 
     return {
-        'id': None,  # Placeholder for the 'id' field
         'title': title,
         'price': price,
         'year': year,
@@ -140,7 +140,6 @@ def scrape_single_ad(link, ad_id):
 
         soup = BeautifulSoup(response.content, 'html.parser')
         info = extract_info(soup)
-        info['id'] = ad_id
         return info
 
     except requests.exceptions.RequestException as e:
